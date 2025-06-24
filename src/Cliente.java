@@ -1,5 +1,4 @@
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -7,34 +6,36 @@ public class Cliente {
     public static void main(String[] args) {
         String ip = "127.0.0.1";
         int port = 12345;
-        Socket socket = null;
 
-        try {
+        try (Scanner input = new Scanner(System.in)) {
             while (true) {
-                socket = new Socket(ip, port);
-                Scanner input = new Scanner(System.in);
-                String mensagem = input.next();
+                Socket socket = new Socket(ip, port);
 
-
-                // Cria writer para enviar dados ao servidor
                 PrintWriter out = new PrintWriter(
                         new OutputStreamWriter(socket.getOutputStream()), true
                 );
 
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream())
+                );
 
+                System.out.print("Digite uma operação (ex: 2 + 3) ou 'sair': ");
+                String operacao = input.nextLine();
 
-                out.println(mensagem);
-                System.out.println("Mensagem enviada ao servidor: " + mensagem);
+                out.println(operacao);
 
-                if(mensagem.equals("sair")){
+                if (operacao.equalsIgnoreCase("sair")) {
+                    socket.close();
                     break;
                 }
+
+                String resposta = in.readLine();
+                System.out.println("Resultado do servidor: " + resposta);
+
+                socket.close();
             }
-
         } catch (Exception e) {
-            System.out.println("Erro: " + e);
+            System.out.println("Erro no cliente: " + e.getMessage());
         }
-
-
     }
 }
